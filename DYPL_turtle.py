@@ -1,15 +1,20 @@
 # coding=utf-8
 '''
-DYPL_turtle.py - Parse a turtle code string and draw it with setPixel from Application class
+DYPL_turtle.py - Parse a turtsle code string and draw it with setPixel from Application class
 Mathieu Bourmaud - 19941124-P335
 Martin Porrès - 19940926-P170
 '''
 
 import re
+import math
 
 class DYPL_turtle:
     def __init__(self, application):
-        self.data = application
+        self.application = application
+        self.isDrawing = False
+        self.x = 0
+        self.y = 0
+        self.angle = 0
         # quand TkTurtle crée un DYPL_turle, il lui passe la class Application en paramètre pour qu'on puisse avoir
         # accès à setPixel() via un application.setPixel(x, Y).
 
@@ -67,26 +72,53 @@ class DYPL_turtle:
             return True
         return False
 
+    def set_angle(self, angle):
+        if (angle < 0):
+            self.angle = 360 - (angle % 360)
+        else:
+            self.angle = angle % 360
+
+    def draw_dot(self):
+        self.application.setPixel(int(self.x), int(self.y))
+
     def pen_down(self):
+        self.isDrawing = True
+        self.draw_dot()
         print("PEN DOWN")
 
-    def put(self, xpos, ypos, angle):
-        print("PUT " + str(xpos) + " " + str(ypos) + " " + str(angle))
-
     def pen_up(self):
+        self.isDrawing = False
         print("PEN UP")
 
+    def put(self, xpos, ypos, angle):
+        self.x = xpos
+        self.y = ypos
+        self.angle = angle
+        self.pen_down()
+        print("PUT " + str(xpos) + " " + str(ypos) + " " + str(angle))
+
     def move_forward(self):
+        self.x += math.cos(math.radians(self.angle))
+        self.y += math.sin(math.radians(self.angle))
+        if self.isDrawing:
+            self.draw_dot()
         print("MOVE FORWARD")
 
     def move_backward(self):
+        self.x -= math.cos(math.radians(self.angle))
+        self.y -= math.sin(math.radians(self.angle))
         print("MOVE BACKWARD")
 
     def move(self, steps, angle):
+        self.turncw(angle)
+        for x in range(0, steps):
+            self.move_forward()
         print("MOVE " + str(steps) + " " +  str(angle))
 
     def turncw(self, angle):
+        self.set_angle(self.angle + angle)
         print("TURN CLOCKWISE " +  str(angle))
 
     def turnccw(self, angle):
+        self.set_angle(self.angle - angle)
         print("TURN COUNTER CLOCKWISE " +  str(angle))
