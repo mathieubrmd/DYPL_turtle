@@ -1,6 +1,10 @@
-pen down
+pden down
 put(150, 150, 45)
-move(300, 0)
+move forward
+move backward
+turn cw(180)
+turn ccw(1380)
+pen up
 
 pen down
 put(150, 150, 0)
