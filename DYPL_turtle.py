@@ -1,6 +1,6 @@
 # coding=utf-8
 '''
-DYPL_turtule.py - Parse a turtule code string and draw it with setPixel from Application class
+DYPL_turtle.py - Parse a turtle code string and draw it with setPixel from Application class
 Mathieu Bourmaud - 19941124-P335
 Martin Porrès - 19940926-P170
 '''
