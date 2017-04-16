@@ -15,32 +15,45 @@ class DYPL_turtle:
         self.x = 0
         self.y = 0
         self.angle = 0
-        # quand TkTurtle crée un DYPL_turle, il lui passe la class Application en paramètre pour qu'on puisse avoir
-        # accès à setPixel() via un application.setPixel(x, Y).
 
-
-    # Quand on clique sur le bouton Run de la GUI, la fonction parseExp est appelée avec le code turtle passé
-    # en paramètre sous forme de string
-
-    # Les boutons Previous et Next de la GUI servent à executer les differentes parties du fichier turtle_code_file
     def parseExp(self, exp):
-        # Permet de récup dans un tableau la différente série d'instruction
         expressions = exp.split('\n')
+        index = 0;
 
-        # Il faut ensuite la parse pour savoir laquelle c'est
-        print(expressions)
-
-        # Il y a donc les 8 expressions + la possibilité d'avoir la boucle for (cas a part qu'on checkera a la fin)
-        for exp in expressions:
-            print("EXP:" + exp)
-            # Methode qui va check les regex et les expressions et qui va call automatiquement la méthode associé
-            # Return False si ça couille
+        while index < len(expressions):
+            exp = expressions[index]
             if self.matchFunction(exp) == False:
-                # Quand ça chie. Faut voir ce qu'on doit faire, là actuellement ça continue le prog mais suffit de return pr que ça stop
-                print("NIQUEZ VOS MERES")
+                if self.checkForLoop(exp, expressions[(index + 1) % len(expressions)], expressions[(index + 2) % len(expressions)]) == False:
+                    return False
+                index += 3
+            else:
+                index += 1
+
+    def checkForLoop(self, exp, statement, end):
+        forRegex = "^for X=?[0-9]+ to [0-9]+ do"
+        forWithVarRegex = "^for var = ?[0-9]+ to [0-9]+ do"
+
+        if bool(re.compile(forRegex).match(exp)) and end == "end":
+            values = self.getForValues(exp, False)
+            index = int(values[1])
+            while index < int(values[3]):
+                if self.matchFunction(statement) == False:
+                    return False
+                index += 1
+        else:
+            return False
 
 
-    # Match avec les regex et call la fonction direct via la String :awesome:
+
+    def getForValues(self, exp, withVar):
+        res = exp.split(' ')
+
+        if withVar == False:
+            res[1] = res[1][2:]
+        else:
+            res[1] = res[1][6:]
+        return res
+
     def matchFunction(self, exp):
         putRegex = "^put\(?[0-9]+. ,?[0-9]+. ,?[0-9]+\)"
         moveRegex = "^move\(?[0-9]+. ,?[0-9]+\)"
@@ -84,41 +97,33 @@ class DYPL_turtle:
     def pen_down(self):
         self.isDrawing = True
         self.draw_dot()
-        print("PEN DOWN")
 
     def pen_up(self):
         self.isDrawing = False
-        print("PEN UP")
 
     def put(self, xpos, ypos, angle):
         self.x = xpos
         self.y = ypos
         self.angle = angle
         self.pen_down()
-        print("PUT " + str(xpos) + " " + str(ypos) + " " + str(angle))
 
     def move_forward(self):
         self.x += math.cos(math.radians(self.angle))
         self.y += math.sin(math.radians(self.angle))
         if self.isDrawing:
             self.draw_dot()
-        print("MOVE FORWARD")
 
     def move_backward(self):
         self.x -= math.cos(math.radians(self.angle))
         self.y -= math.sin(math.radians(self.angle))
-        print("MOVE BACKWARD")
 
     def move(self, steps, angle):
         self.turncw(angle)
         for x in range(0, steps):
             self.move_forward()
-        print("MOVE " + str(steps) + " " +  str(angle))
 
     def turncw(self, angle):
         self.set_angle(self.angle + angle)
-        print("TURN CLOCKWISE " +  str(angle))
 
     def turnccw(self, angle):
         self.set_angle(self.angle - angle)
-        print("TURN COUNTER CLOCKWISE " +  str(angle))
