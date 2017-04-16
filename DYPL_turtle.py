@@ -22,44 +22,86 @@ class DYPL_turtle:
 
         while index < len(expressions):
             exp = expressions[index]
+
+            # Match function compares the exp to the regex of the 8 functions
             if self.matchFunction(exp) == False:
-                if self.checkForLoop(exp, expressions[(index + 1) % len(expressions)], expressions[(index + 2) % len(expressions)]) == False:
+                # Getting the return value, it can be either the position of the end statement or a False
+                returnValue = self.checkForLoop(expressions, index)
+
+                # Just checking if an error has append in the checkForLoop method
+                if returnValue == False:
                     return False
-                index += 3
+
+                # Change the position of the loop so we don't evaluate the end statements or whatever
+                index = returnValue + 1
             else:
                 index += 1
 
-    def checkForLoop(self, exp, statement, end):
-        forRegex = "^for X=?[0-9]+ to [0-9]+ do"
-        forWithVarRegex = "^for var = ?[0-9]+ to [0-9]+ do"
+    # Return the position of the end statement or False
+    # Get the values of the for string and executes the statements
+    def checkForLoop(self, expressions, index):
+        # The position of the end statement
+        endPos = self.getEndPos(expressions, index)
 
-        if bool(re.compile(forRegex).match(exp)) and end == "end":
-            values = self.getForValues(exp, False)
-            index = int(values[1])
-            while index < int(values[3]):
-                if self.matchFunction(statement) == False:
-                    return False
-                index += 1
-        else:
+        # The for values X and To
+        values = self.getForValues(expressions[index])
+
+        # Something wrong happened
+        if values == None:
             return False
 
+        # Loop and executes statements
+        x = int(values[0])
+        while x != int(values[1]):
+            # Loop between the for and the end statement so it executes all the statements between both instructions
+            # y = the position of the next instruction after the for
+            y = index + 1
+            while y != endPos:
+                exp = self.setValueInInstrution(expressions[y], values[2], x)
+                if self.matchFunction(exp) == False:
+                    return False
+                y += 1
+            x += 1
+        return endPos
+
+    # Set the value X or var or whatever in the string
+    def setValueInInstrution(self, exp, var, val):
+        # replace the x or v or var inside the instruction
+        # we don't want the v of move for example to be replaced in the case that the var name is v
+        # so the goal is to change the values inside the parenthesis
+        exps = exp.split('(')
+        exps[1] = exps[1].replace(var, str(val))
+        exp = exps[0] + '(' + exps[1]
+        return exp
+
+    # Get the position of the end statement
+    def getEndPos(self, expressions, index):
+        while expressions[index] != "end":
+            index += 1
+        return index
 
 
-    def getForValues(self, exp, withVar):
+    # Get the values of the for loop
+    def getForValues(self, exp):
         res = exp.split(' ')
+        values = [0, 0, 0]
 
-        if withVar == False:
-            res[1] = res[1][2:]
-        else:
-            res[1] = res[1][6:]
-        return res
+        # The equal char : it means that it's the format X=NUMBER and not var = NUMBER
+        try:
+            if res[1][1] == "=":
+                values[0] = res[1][2:]
+                values[1] = res[3]
+                values[2] = res[1][:1]
+            else:
+                values[0] = res[3]
+                values[1] = res[5]
+                values[2] = res[1]
+            return values
+        except:
+            print("Error, the loop: " + exp + " is not valid. It may be a for loop ")
+            return None
 
     def matchFunction(self, exp):
-        putRegex = "^put\(?[0-9]+. ,?[0-9]+. ,?[0-9]+\)"
-        moveRegex = "^move\(?[0-9]+. ,?[0-9]+\)"
-        turnCWRegex = "^turn cw\(?[0-9]+\)"
-        turnCCWRegex = "^turn ccw\(?[0-9]+\)"
-
         if exp == "pen down":
             self.pen_down()
             return True
@@ -76,14 +118,12 @@ class DYPL_turtle:
             self.move_backward()
             return True
 
-        if (bool(re.compile(putRegex).match(exp)) or
-            bool(re.compile(moveRegex).match(exp)) or
-            bool(re.compile(turnCWRegex).match(exp)) or
-            bool(re.compile(turnCCWRegex).match(exp))):
-            exp = exp.replace(' ', '')
-            eval("self.{0}".format(exp))
+        try:
+            eval("self.{0}".format(exp.strip()))
             return True
-        return False
+        except:
+            print("Error, the expression: " + exp.strip() + " is not valid.")
+            return False
 
     def set_angle(self, angle):
         if (angle < 0):
