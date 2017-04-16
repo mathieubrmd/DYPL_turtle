@@ -1,8 +1,8 @@
 # coding=utf-8
 '''
-DYPL_turtle.py - Parse a turtsle code string and draw it with setPixel from Application class
+DYPL_turtle.py - Parse a turtle code string and draw it with setPixel from Application class
 Mathieu Bourmaud - 19941124-P335
-Martin Porrès - 19940926-P170
+Martin Porres - 19940926-P170
 '''
 
 import re
@@ -98,7 +98,7 @@ class DYPL_turtle:
                 values[2] = res[1]
             return values
         except:
-            print("Error, the loop: " + exp + " is not valid. It may be a for loop ")
+            print("Error, the loop: " + exp + " is not valid.")
             return None
 
     def matchFunction(self, exp):
@@ -122,7 +122,7 @@ class DYPL_turtle:
             eval("self.{0}".format(exp.strip()))
             return True
         except:
-            print("Error, the expression: " + exp.strip() + " is not valid.")
+            print("Error, the expression: " + exp.strip() + " is either not valid or is a for loop.")
             return False
 
     def set_angle(self, angle):
